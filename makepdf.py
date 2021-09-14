@@ -68,13 +68,13 @@ def getPrevailSize(filenames: list): #unit: pixel
 
 
 def isLineWhite(img_data: np.array, x: int): # to avoid cutting words
-    if (img_data.shape[0]*255 - np.sum(img_data[:, x])) < 50:  # 10 is arbitrary tolerance threshold
+    if (img_data.shape[0]*255 - np.sum(img_data[:, x])) < 50:  # 50 is arbitrary tolerance threshold
         return True
     else:
         return False
     
 def isPicWhite(img_data: np.array): # to avoid cutting words
-    if (img_data.shape[0]*img_data.shape[1]*255 - np.sum(img_data)) < 10000:  # 200 is arbitrary tolerance threshold
+    if (img_data.shape[0]*img_data.shape[1]*255 - np.sum(img_data)) < 10000:  # 10000 is arbitrary tolerance threshold
         return True
     else:
         return False
@@ -85,7 +85,7 @@ def verticalCut(img: Image):
     v_cuts = [img.size[0]]
     v = img.size[0] - segment_w
     img_data = np.asarray(img)
-    while v > 50:
+    while v > 10:
         v_cache = v
         go_left = False
         while isLineWhite(img_data, v) == False:
@@ -135,7 +135,7 @@ page_mm_h = 361.2
 pdf = FPDF()
 
 for filename in filenames:
-#    try:
+    try:
         print(filename)
         img = Image.open(filename)
         img = img.convert('L')
@@ -168,7 +168,7 @@ for filename in filenames:
             elif img_h <= device_h:
                 addPDFPage(img)
 
-#    except:
-#        print("unsupported file skipped: {}".format(filename))
+    except:
+        print("unsupported file skipped: {}".format(filename))
 pdf.output(join(mypath, 'output2.pdf'))
 
