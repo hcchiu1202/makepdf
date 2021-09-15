@@ -40,44 +40,15 @@ pseudo:
 '''
 
 import numpy as np
-import math
-import re
-import imagesize
-from collections import Counter
 from PIL import Image
 from fpdf import FPDF
 from os import listdir
 from os.path import isfile, join
 #import tqdm
+from utils import sorted_alphanumeric, isLineWhite, isPicWhite
+from horizontalCut import horizontalCut
 
 
-########### utils ###################
-
-def sorted_alphanumeric(data):
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
-    return sorted(data, key=alphanum_key)
-
-def getPrevailSize(filenames: list): #unit: pixel
-    size_list = []
-    for filename in filenames:
-        size_list.append(imagesize.get(filename))
-        if Counter(size_list).most_common()[0][1] < 20:
-            print("Warning: possibly irregular image sizes")
-    return Counter(size_list).most_common()[0][0] #tuple:(width, height)
-
-
-def isLineWhite(img_data: np.array, x: int): # to avoid cutting words
-    if (img_data.shape[0]*255 - np.sum(img_data[:, x])) < 50:  # 50 is arbitrary tolerance threshold
-        return True
-    else:
-        return False
-    
-def isPicWhite(img_data: np.array): # to avoid cutting words
-    if (img_data.shape[0]*img_data.shape[1]*255 - np.sum(img_data)) < 10000:  # 10000 is arbitrary tolerance threshold
-        return True
-    else:
-        return False
 
 def verticalCut(img: Image):
     n_cut = img.size[0] // device_w
@@ -115,10 +86,12 @@ def addPDFPage(img):
     pdf.add_page(orientation = 'P', format = (img.size[0], img.size[1])) 
     pdf.image(img, x=0, y=0, h=img.size[1]) #unit in mm
 
-######################################
+
 
 ##### params #####
-mypath = '.'
+mypath = input('Directory which contains image files:\n')
+if mypath == '':
+    mypath = '.'
 filenames = sorted_alphanumeric(
     [f for f in listdir(mypath) if isfile(join(mypath, f)) and f[-2:] != 'py' and f[-3:] != 'pdf']
     )
@@ -135,9 +108,9 @@ page_mm_h = 361.2
 pdf = FPDF()
 
 for filename in filenames:
-    try:
+    #try:
         print(filename)
-        img = Image.open(filename)
+        img = Image.open(join(mypath, filename))
         img = img.convert('L')
         img_w, img_h = img.size
         
@@ -168,7 +141,10 @@ for filename in filenames:
             elif img_h <= device_h:
                 addPDFPage(img)
 
-    except:
-        print("unsupported file skipped: {}".format(filename))
-pdf.output(join(mypath, 'output2.pdf'))
+    #except:
+    #    print("unsupported file skipped: {}".format(filename))
+try:
+    pdf.output(join(mypath, mypath[mypath.rfind('\\')+1:]+'.pdf'))
+except:
+    pdf.output(join(mypath, 'output.pdf'))
 
