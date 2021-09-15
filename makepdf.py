@@ -42,10 +42,10 @@ pseudo:
 import numpy as np
 from PIL import Image
 from fpdf import FPDF
-from os import listdir
+import os
 from os.path import isfile, join
 #import tqdm
-from utils import sorted_alphanumeric, isLineWhite, isPicWhite
+from utils import sorted_alphanumeric, isLineWhiteV, isPicWhite
 from horizontalCut import horizontalCut
 
 
@@ -59,7 +59,7 @@ def verticalCut(img: Image):
     while v > 10:
         v_cache = v
         go_left = False
-        while isLineWhite(img_data, v) == False:
+        while isLineWhiteV(img_data, v) == False:
             v += 1 # right shift the v_cut point until whole column is white
             if v == v_cuts[-1]:
                 v = v_cache
@@ -67,7 +67,7 @@ def verticalCut(img: Image):
                 break
             
         if go_left == True:
-            while isLineWhite(img_data, v) == False:
+            while isLineWhiteV(img_data, v) == False:
                 v -= 1
                 if v == 0:
                     v_cuts.append(0)
@@ -79,21 +79,25 @@ def verticalCut(img: Image):
     v_cuts.append(0)
     return v_cuts #list of int of v_cut_point
 
-def horizontalCut(img: Image):
-    return # img: one PIL image
 
-def addPDFPage(img):
+def addPDFPage(img: Image):
     pdf.add_page(orientation = 'P', format = (img.size[0], img.size[1])) 
     pdf.image(img, x=0, y=0, h=img.size[1]) #unit in mm
 
-
+def addWidePage(img: Image, v_cuts:list):
+    for i in range(len(v_cuts)-1):
+        cropped = img.crop((v_cuts[i+1], 0, v_cuts[i], img.size[1]))  #(left, upper, right, lower)
+        cropped_data = np.asarray(cropped)
+        if isPicWhite(cropped_data) == True:
+            continue
+        addPDFPage(cropped)
 
 ##### params #####
 mypath = input('Directory which contains image files:\n')
 if mypath == '':
-    mypath = '.'
+    mypath = os.getcwd()
 filenames = sorted_alphanumeric(
-    [f for f in listdir(mypath) if isfile(join(mypath, f)) and f[-2:] != 'py' and f[-3:] != 'pdf']
+    [f for f in os.listdir(mypath) if isfile(join(mypath, f)) and f[-2:] != 'py' and f[-3:] != 'pdf']
     )
 
 device_w = 768
@@ -121,18 +125,13 @@ for filename in filenames:
                     addPDFPage(img)
                 else:                                                                       # wide page
                     v_cuts = verticalCut(img)
-                    
-                    for i in range(len(v_cuts)-1):
-                        cropped = img.crop((v_cuts[i+1], 0, v_cuts[i], img.size[1]))  #(left, upper, right, lower)
-                        cropped_data = np.asarray(cropped)
-                        if isPicWhite(cropped_data) == True:
-                            continue
-                        addPDFPage(cropped)
+                    addWidePage(img, v_cuts)
             else:                                                                           # resize according to width (long page)
                 img = img.resize((device_w, img_h*device_w//img_w), resample=Image.LANCZOS)
-                #img = horizontalCut(img)
-                #imgs = verticalCut(img)
-                addPDFPage(img)
+                img = horizontalCut(img)
+                v_cuts = verticalCut(img)
+                addWidePage(img, v_cuts)
+                
         elif img_w < device_w and img_h < device_h:                                         # small page, direct add
             addPDFPage(img)
         else:                                                                               # strange ratio image
