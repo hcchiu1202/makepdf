@@ -12,6 +12,7 @@ pip install Pillow fpdf2
 
 Only tested on Windows 10 command prompt
 
-# TODO
+# TODO/issue
 - make wrapper for standalone run .exe
 - implement horizontal cut for long pages
+- file size increase when handling wide pages, need investigate reason
