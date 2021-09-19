@@ -38,6 +38,7 @@ def isLineWhiteV(img_data: np.array, x: int): # to avoid cutting words #maybe be
     
 def isLineWhiteH(img_data: np.array, y: int): 
     reverse_sensitivity = 20
+    # TODO: how about  sen < shape/sen < sen**2 ? better make it continuous
     if img_data.shape[1]//reverse_sensitivity > reverse_sensitivity:
         threshold = img_data.shape[1]//reverse_sensitivity 
     else: 
