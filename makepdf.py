@@ -112,7 +112,7 @@ page_mm_h = 361.2
 pdf = FPDF()
 
 for filename in filenames:
-    #try:
+    try:
         print(filename)
         img = Image.open(join(mypath, filename))
         img = img.convert('L')
@@ -140,8 +140,8 @@ for filename in filenames:
             elif img_h <= device_h:
                 addPDFPage(img)
 
-    #except:
-    #    print("unsupported file skipped: {}".format(filename))
+    except:
+        print("unsupported file skipped: {}".format(filename))
 try:
     pdf.output(join(mypath, mypath[mypath.rfind('\\')+1:]+'.pdf'))
 except:

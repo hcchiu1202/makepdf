@@ -26,15 +26,27 @@ def getPrevailSize(filenames: list): #unit: pixel
 
 
 def isLineWhiteV(img_data: np.array, x: int): # to avoid cutting words #maybe better count non-white point but more computation?
-    if (img_data.shape[0]*255 - np.sum(img_data[:, x])) < (img_data.shape[0]//20): # img_data.shape[0]//20 is arbitrary tolerance threshold, adaptive to how long is the line
+    reverse_sensitivity = 20
+    if img_data.shape[0]//reverse_sensitivity > reverse_sensitivity:
+        threshold = img_data.shape[0]//reverse_sensitivity 
+    else: 
+        threshold = img_data.shape[0]
+    if (img_data.shape[0]*255 - np.sum(img_data[:, x])) < threshold: # img_data.shape[0]//20 is arbitrary tolerance threshold, adaptive to how long is the line
         return True
     else:
         return False
     
 def isLineWhiteH(img_data: np.array, y: int): 
-    if (img_data.shape[1]*255 - np.sum(img_data[y, :])) < (img_data.shape[1]//20):  
+    reverse_sensitivity = 20
+    if img_data.shape[1]//reverse_sensitivity > reverse_sensitivity:
+        threshold = img_data.shape[1]//reverse_sensitivity 
+    else: 
+        threshold = img_data.shape[1]
+    if (img_data.shape[1]*255 - np.sum(img_data[y, :])) < threshold:  
         return True
     else:
+        #print(img_data.shape[1]*255 - np.sum(img_data[y, :]), img_data.shape[1]//20)
+        #print(y)
         return False    
     
 def isPicWhite(img_data: np.array): # to avoid cutting words

@@ -9,7 +9,7 @@ from PIL import Image
 from os import listdir
 from os.path import isfile, join
 
-from utils import isLineWhiteV
+from utils import isLineWhiteV, isLineWhiteH, isPicWhite
 
 '''
 code for cutting and re-arranging pages with long text lay-out
@@ -34,13 +34,60 @@ pseudo: (for regular word page)
 TODO: handle exception page, e.g. with image-like chapter header etc
 '''
 
+def getHCuts(img:Image, 
+            #upper:int, 
+            #lower=None: int
+            ):
+    columns_bw = np.zeros((img.size[0]))
+    img_data = np.asarray(img)
+    for w in range(img.size[0]):
+        if isLineWhiteV(img_data, w) == True:
+            columns_bw[w] = 1
+        else:
+            columns_bw[w] = 0
+    h_cuts = []
+    for w in range(img.size[0] - 1):
+        if columns_bw[w+1] - columns_bw[w] == 1:
+            try:
+                h_cuts.append(w+1+2)
+            except IndexError:
+                h_cuts.append(w+1)
+    h_cuts.append(img.size[0])
+    h_cuts.reverse()
+    h_cuts.append(0)
+    return h_cuts  
+
+
 def horizontalCut(img: Image):
+    y_scan = 100
     img_w, img_h = img.size
     bg_img = Image.new("L", (img_w*2, img_h//2), 255)
-    bg_w_left = bg_img.size[0]
-    
-    
-    return #img: rearranged image of dimension (w*2, h/2) of input image
+    bg_w_remain = bg_img.size[0]
+    img_data = np.asarray(img)
+    while isLineWhiteH(img_data, y_scan) == False:
+        y_scan -= 1
+    #print("passed first isLineWhite")
+    h_cuts = getHCuts(img.crop((0, y_scan, img_w, img_h)))
+    #print("hcuts:", h_cuts)
+    for i in range(len(h_cuts) - 1):
+        column = img.crop((h_cuts[i+1], y_scan, h_cuts[i], img_h))
+        #print(column.size)
+        h_scan = column.size[1] // 2
+        column_data = np.asarray(column)
+        #print(column_data.shape[0], h_scan)
+        while isLineWhiteH(column_data, h_scan) == False:
+            #print(h_scan)
+            h_scan += 1
+        #print("passed second isLineWhite")
+        crop_ys = [0, h_scan, column.size[1]]
+        for i in range(len(crop_ys) - 1):
+            column_cropped = column.crop((0, crop_ys[i], column.size[0], crop_ys[i+1]))
+            column_cropped_data = np.asarray(column_cropped)
+            if isPicWhite(column_cropped_data) == True:
+                continue
+            bg_img.paste(column_cropped, (bg_w_remain - column.size[0], 0)) #tuple is (x, y) of top-left of the paste
+            bg_w_remain -= column.size[0]
+    return bg_img #img: rearranged image of dimension (w*2, h/2) of input image
 
 
 
