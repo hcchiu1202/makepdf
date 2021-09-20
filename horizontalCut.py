@@ -41,7 +41,7 @@ def getHCuts(img:Image,
     columns_bw = np.zeros((img.size[0]))
     img_data = np.asarray(img)
     for w in range(img.size[0]):
-        if isLineWhiteV(img_data, w) == True:
+        if isLineWhiteV(img_data, w, sensitivity=70) == True:
             columns_bw[w] = 1
         else:
             columns_bw[w] = 0
@@ -64,7 +64,7 @@ def horizontalCut(img: Image):
     bg_img = Image.new("L", (img_w*2, img_h//2), 255)
     bg_w_remain = bg_img.size[0]
     img_data = np.asarray(img)
-    while isLineWhiteH(img_data, y_scan) == False:
+    while isLineWhiteH(img_data, y_scan, sensitivity=80) == False:
         y_scan -= 1
     #print("passed first isLineWhite")
     h_cuts = getHCuts(img.crop((0, y_scan, img_w, img_h)))
