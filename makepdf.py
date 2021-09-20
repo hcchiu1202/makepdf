@@ -124,13 +124,19 @@ for filename in filenames:
                 if img.size[0] < v_cut_threshold:                                           # normal page
                     addPDFPage(img)
                 else:                                                                       # wide page
-                    v_cuts = verticalCut(img)
-                    addWidePage(img, v_cuts)
+                    try:
+                        v_cuts = verticalCut(img)
+                        addWidePage(img, v_cuts)
+                    except IndexError:
+                        addPDFPage(img)
             else:                                                                           # resize according to width (long page)
                 img = img.resize((device_w, img_h*device_w//img_w), resample=Image.LANCZOS)
-                img = horizontalCut(img)
-                v_cuts = verticalCut(img)
-                addWidePage(img, v_cuts)
+                try:
+                    img = horizontalCut(img)
+                    v_cuts = verticalCut(img)
+                    addWidePage(img, v_cuts)
+                except IndexError:
+                    addPDFPage(img)
                 
         elif img_w < device_w and img_h < device_h:                                         # small page, direct add
             addPDFPage(img)
@@ -142,8 +148,13 @@ for filename in filenames:
 
     except:
         print("unsupported file skipped: {}".format(filename))
+        
+print("Finished processing")
+
 try:
     pdf.output(join(mypath, mypath[mypath.rfind('\\')+1:]+'.pdf'))
+    print("OUTPUT: {}".format(join(mypath, mypath[mypath.rfind('\\')+1:]+'.pdf')))
 except:
     pdf.output(join(mypath, 'output.pdf'))
+    print("OUTPUT: {}".format(join(mypath, 'output.pdf')))
 

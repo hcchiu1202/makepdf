@@ -52,8 +52,15 @@ def getHCuts(img:Image,
                 h_cuts.append(w+1+2)
             except IndexError:
                 h_cuts.append(w+1)
+    h_intervals = []
+    for i in range(len(h_cuts) - 1):
+        h_intervals.append(h_cuts[i+1] - h_cuts[i])
+        h_interval_mean = int(sum(h_intervals) / (len(h_cuts) - 1))
+    
     h_cuts.append(img.size[0])
     h_cuts.reverse()
+    if h_cuts[-1] > h_interval_mean:
+        h_cuts.append(h_cuts[-1] - h_interval_mean)
     h_cuts.append(0)
     return h_cuts  
 
@@ -69,6 +76,7 @@ def horizontalCut(img: Image):
     #print("passed first isLineWhite")
     h_cuts = getHCuts(img.crop((0, y_scan, img_w, img_h)))
     #print("hcuts:", h_cuts)
+    #print(img_w)
     for i in range(len(h_cuts) - 1):
         column = img.crop((h_cuts[i+1], y_scan, h_cuts[i], img_h))
         #print(column.size)
