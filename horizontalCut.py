@@ -6,6 +6,7 @@ Created on Mon Oct 19 11:59:21 2020
 """
 import numpy as np
 from PIL import Image
+import sys
 import os
 from os.path import isfile, join
 
@@ -65,10 +66,10 @@ def getHCuts(img:Image,
     return h_cuts  
 
 
-def horizontalCut(img: Image):
+def horizontalCut(img: Image, split: int = 3):
     y_scan = 100
     img_w, img_h = img.size
-    bg_img = Image.new("L", (img_w*2, img_h//2), 255)
+    bg_img = Image.new("L", (img_w*split, img_h//split), 255)
     bg_w_remain = bg_img.size[0]
     img_data = np.asarray(img)
     while isLineWhiteH(img_data, y_scan, sensitivity=80) == False:
@@ -80,14 +81,21 @@ def horizontalCut(img: Image):
     for i in range(len(h_cuts) - 1):
         column = img.crop((h_cuts[i+1], y_scan, h_cuts[i], img_h))
         #print(column.size)
-        h_scan = column.size[1] // 2
-        column_data = np.asarray(column)
-        #print(column_data.shape[0], h_scan)
-        while isLineWhiteH(column_data, h_scan) == False:
-            #print(h_scan)
-            h_scan += 1
+        crop_ys = []
+        for i in range(split - 1):
+            h_scan = (column.size[1] // split) * (i+1)
+            column_data = np.asarray(column)
+            #print(column_data.shape[0], h_scan)
+            while isLineWhiteH(column_data, h_scan) == False:
+                #print(h_scan)
+                h_scan += 1
+            if len(crop_ys) > 0 and h_scan == crop_ys[-1]:
+                continue
+            crop_ys.append(h_scan)
         #print("passed second isLineWhite")
-        crop_ys = [0, h_scan, column.size[1]]
+        crop_ys.insert(0, 0)
+        crop_ys.append(column.size[1])
+        
         for i in range(len(crop_ys) - 1):
             column_cropped = column.crop((0, crop_ys[i], column.size[0], crop_ys[i+1]))
             column_cropped_data = np.asarray(column_cropped)
@@ -101,6 +109,8 @@ def horizontalCut(img: Image):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        split = int(sys.argv[1])
     mypath = input('Directory which contains image files:\n')
     if mypath == '':
         mypath = os.getcwd()
@@ -113,7 +123,10 @@ if __name__ == '__main__':
         pth = join(mypath, filename)
         img = Image.open(pth)
         img = img.convert('L')
-        img = horizontalCut(img)
+        try:
+            img = horizontalCut(img, split)
+        except:
+            img = horizontalCut(img)
         img_data = np.asarray(img)
         v = 0
         while isLineWhiteV(img_data, v) == True:
