@@ -8,12 +8,15 @@
  - to install dependencies: pip install Pillow fpdf2
 
 # How to use
-- Download makepdf.py
-- Place it in the directory containing images you want to compile
+- For cutting + compiling:
+- clone the repo
 - run "python makepdf.py"
+- input directory containing the images you want to compile
+- a PDF file will be generated
 
-Only tested on Windows 10 command prompt
+- For standalone use of horizontal cut for long image:
+- clone the repo
+- run "python horizontalCut.py"
+- input directory containing the images you want to edit
+- a wide version of the long page will be generated for each page
 
-# TODO/issue
-- make wrapper for standalone run .exe (NOT DOING THIS since can easily do with pyinstaller, if file size is not a conern)
-- DONE: implement horizontal cut for long pages

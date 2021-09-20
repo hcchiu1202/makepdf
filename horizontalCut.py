@@ -6,10 +6,10 @@ Created on Mon Oct 19 11:59:21 2020
 """
 import numpy as np
 from PIL import Image
-from os import listdir
+import os
 from os.path import isfile, join
 
-from utils import isLineWhiteV, isLineWhiteH, isPicWhite
+from utils import sorted_alphanumeric, isLineWhiteV, isLineWhiteH, isPicWhite
 
 '''
 code for cutting and re-arranging pages with long text lay-out
@@ -101,11 +101,18 @@ def horizontalCut(img: Image):
 
 
 if __name__ == '__main__':
-    mypath = '.'
-    filenames = [f for f in listdir(mypath) if isfile(join(mypath, f)) and f[-2:] != 'py']
+    mypath = input('Directory which contains image files:\n')
+    if mypath == '':
+        mypath = os.getcwd()
+    filenames = sorted_alphanumeric(
+        [f for f in os.listdir(mypath) if isfile(join(mypath, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        )
     
-    #for filename in filenames:
-    #    load image
-    #    horizontalCut(image)
-    
-    #    save image
+    for filename in filenames:
+        print(filename)
+        pth = join(mypath, filename)
+        img = Image.open(pth)
+        img = img.convert('L')
+        img = horizontalCut(img)
+        img.save(pth[:pth.rfind(".")] + "_w" + pth[pth.rfind("."):])
+        
