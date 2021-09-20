@@ -6,48 +6,14 @@ Created on Mon Oct 19 11:59:21 2020
 
 script for compiling a batch of images to a pdf suitable for viewing on Kindle paperwhite
 """
-'''
-pseudo:
-    load
-    if w > 768 and h > 1024:
-        (cut white edge here?)
-        resize
-        (but how to determine resize according to which side?)
-         - if w/h >0.65 resize to h=1024 
-             - if after resize w < 820, go to 1 (just fit)
-             - else go to 2 (wide page)
-         - if w/h < 0.65 resize to w=768 (long page)
-         
-    1. regular page, no need cut
-            
-        > add to pdf
-    2.  page need verticle cut (wide page)
-        what criteria?
-         > (loop) get v_cut point()
-             make w//768 number of cut # this general to no matter how large is w
-
-         >> adjustCutPoint (avoid cutting words)
-         > get list of cut point (at least 1)
-         > cut
-         > get list of cutted image
-         >> send to 1 and loop
-         
-         - elif w/h < 0.75 but h> xxxx (e.g. super long page)
-    3. page need horizontal cut
-        (to be implemented)
-    4. irregular page <all no need preprocess
-
-'''
 
 import numpy as np
 from PIL import Image
 from fpdf import FPDF
 import os
 from os.path import isfile, join
-#import tqdm
 from utils import sorted_alphanumeric, isLineWhiteV, isPicWhite
 from horizontalCut import horizontalCut
-
 
 
 def verticalCut(img: Image):
@@ -104,8 +70,6 @@ device_w = 768
 device_h = 1024
 v_cut_threshold = 820
 long_page_ratio = 0.65 #page w/h below this is long page
-page_mm_w = 270.9 #(270.9, 361.2)mm correspond to 768x1024 in 72dpi
-page_mm_h = 361.2
 
 ######################################
 
@@ -125,18 +89,14 @@ for filename in filenames:
                     addPDFPage(img)
                 else:                                                                       # wide page
                     try:
-                        print(img.size)
                         v_cuts = verticalCut(img)
                         addWidePage(img, v_cuts)
                     except IndexError:
                         addPDFPage(img)
             else:                                                                           # resize according to width (long page)
-                #img = img.resize((device_w, img_h*device_w//img_w), resample=Image.LANCZOS)
                 try:
                     img = horizontalCut(img)
-                    print(img.size)
                     img = img.resize((img.size[0]*device_h//img.size[1], device_h), resample=Image.LANCZOS)
-                    print(img.size)
                     v_cuts = verticalCut(img)
                     addWidePage(img, v_cuts)
                 except IndexError:

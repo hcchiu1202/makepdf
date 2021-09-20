@@ -12,33 +12,9 @@ from os.path import isfile, join
 
 from utils import sorted_alphanumeric, isLineWhiteV, isLineWhiteH, isPicWhite
 
-'''
-code for cutting and re-arranging pages with long text lay-out
-TODO: make running standalone for image processing
 
-pseudo: (for regular word page)
-    load image
-    make bg image < initialize available_width = bg_image.size[0]
-    from y=100(or some threshold) scan upward for horizontal white line >> get UPPER
-    scan from right to left for points of "vertical white line > non-white line" >> get list of v_cuts
-        >between adjacent values in v_cuts should contain one column of word
-    loop and crop(slice) image vertically according to v_cuts
-        > (left, upper, right, lower) < (v_cuts[i+1], UPPER, v_cuts[i], img.size[1])
-    for each slice:
-        scan from middle point (slice.size[1]/2), downward, for horizontal whiteline >> avoid cutting a word in half
-        paste upper part of slice (right=bg_image.available_width)
-        bg_image.available_with -= slice.size[0]
-        paste lower part of slice (right=bg_image.available_width)
-        bg_image.available_with -= slice.size[0]
-    return bg_image
-    
-TODO: handle exception page, e.g. with image-like chapter header etc
-'''
 
-def getHCuts(img:Image, 
-            #upper:int, 
-            #lower=None: int
-            ):
+def getHCuts(img:Image):
     columns_bw = np.zeros((img.size[0]))
     img_data = np.asarray(img)
     for w in range(img.size[0]):
@@ -74,25 +50,18 @@ def horizontalCut(img: Image, split: int = 3):
     img_data = np.asarray(img)
     while isLineWhiteH(img_data, y_scan, sensitivity=80) == False:
         y_scan -= 1
-    #print("passed first isLineWhite")
     h_cuts = getHCuts(img.crop((0, y_scan, img_w, img_h)))
-    #print("hcuts:", h_cuts)
-    #print(img_w)
     for i in range(len(h_cuts) - 1):
         column = img.crop((h_cuts[i+1], y_scan, h_cuts[i], img_h))
-        #print(column.size)
         crop_ys = []
         for i in range(split - 1):
             h_scan = (column.size[1] // split) * (i+1)
             column_data = np.asarray(column)
-            #print(column_data.shape[0], h_scan)
             while isLineWhiteH(column_data, h_scan) == False:
-                #print(h_scan)
                 h_scan += 1
             if len(crop_ys) > 0 and h_scan == crop_ys[-1]:
                 continue
             crop_ys.append(h_scan)
-        #print("passed second isLineWhite")
         crop_ys.insert(0, 0)
         crop_ys.append(column.size[1])
         
@@ -135,4 +104,6 @@ if __name__ == '__main__':
             img = horizontalCut(img)
         
         img.save(pth[:pth.rfind(".")] + "_w" + pth[pth.rfind("."):])
+        
+    print("Finished processing horizonal cutting")
         
