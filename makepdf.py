@@ -125,6 +125,7 @@ for filename in filenames:
                     addPDFPage(img)
                 else:                                                                       # wide page
                     try:
+                        print(img.size)
                         v_cuts = verticalCut(img)
                         addWidePage(img, v_cuts)
                     except IndexError:
@@ -133,6 +134,9 @@ for filename in filenames:
                 #img = img.resize((device_w, img_h*device_w//img_w), resample=Image.LANCZOS)
                 try:
                     img = horizontalCut(img)
+                    print(img.size)
+                    img = img.resize((img.size[0]*device_h//img.size[1], device_h), resample=Image.LANCZOS)
+                    print(img.size)
                     v_cuts = verticalCut(img)
                     addWidePage(img, v_cuts)
                 except IndexError:

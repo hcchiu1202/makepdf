@@ -103,7 +103,13 @@ def horizontalCut(img: Image, split: int = 3):
                 continue
             bg_img.paste(column_cropped, (bg_w_remain - column.size[0], 0)) #tuple is (x, y) of top-left of the paste
             bg_w_remain -= column.size[0]
-    return bg_img #img: rearranged image of dimension (w*2, h/2) of input image
+            
+    bg_img_data = np.asarray(bg_img)                # trim white area unused in bg
+    v = 0
+    while isLineWhiteV(bg_img_data, v) == True:
+        v += 1                                      # right shift the v_cut point until whole column is white
+    bg_img = bg_img.crop((max(0, v - 10), 0, bg_img.size[0], bg_img.size[1]))
+    return bg_img #img: rearranged image of dimension (w*2, h/2) of input image - the trimmed white area at left side
 
 
 
@@ -127,11 +133,6 @@ if __name__ == '__main__':
             img = horizontalCut(img, split)
         except:
             img = horizontalCut(img)
-        img_data = np.asarray(img)
-        v = 0
-        while isLineWhiteV(img_data, v) == True:
-            v += 1 # right shift the v_cut point until whole column is white
-        img = img.crop((max(0, v - 10), 0, img.size[0], img.size[1]))
         
         img.save(pth[:pth.rfind(".")] + "_w" + pth[pth.rfind("."):])
         
