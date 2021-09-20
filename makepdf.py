@@ -130,7 +130,7 @@ for filename in filenames:
                     except IndexError:
                         addPDFPage(img)
             else:                                                                           # resize according to width (long page)
-                img = img.resize((device_w, img_h*device_w//img_w), resample=Image.LANCZOS)
+                #img = img.resize((device_w, img_h*device_w//img_w), resample=Image.LANCZOS)
                 try:
                     img = horizontalCut(img)
                     v_cuts = verticalCut(img)
