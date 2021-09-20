@@ -97,7 +97,7 @@ mypath = input('Directory which contains image files:\n')
 if mypath == '':
     mypath = os.getcwd()
 filenames = sorted_alphanumeric(
-    [f for f in os.listdir(mypath) if isfile(join(mypath, f)) and f[-2:] != 'py' and f[-3:] != 'pdf']
+    [f for f in os.listdir(mypath) if isfile(join(mypath, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))]
     )
 
 device_w = 768
