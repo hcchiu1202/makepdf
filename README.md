@@ -1,9 +1,11 @@
 # makepdf
  - Script for compiling a batch of images to a pdf suitable for viewing on Kindle paperwhite (1024x768)
- - Can automatically trim a wide page into multiple protrait pages
+ - Can automatically trim a wide page / long page into multiple protrait pages
 
 # dependencies
-pip install Pillow fpdf2
+ - python 3
+
+ - to install dependencies: pip install Pillow fpdf2
 
 # How to use
 - Download makepdf.py
@@ -13,6 +15,5 @@ pip install Pillow fpdf2
 Only tested on Windows 10 command prompt
 
 # TODO/issue
-- make wrapper for standalone run .exe
-- implement horizontal cut for long pages
-- file size increase when handling wide pages, need investigate reason
+- make wrapper for standalone run .exe (NOT DOING THIS since can easily do with pyinstaller, if file size is not a conern)
+- DONE: implement horizontal cut for long pages
