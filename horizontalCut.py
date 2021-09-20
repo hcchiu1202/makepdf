@@ -114,5 +114,11 @@ if __name__ == '__main__':
         img = Image.open(pth)
         img = img.convert('L')
         img = horizontalCut(img)
+        img_data = np.asarray(img)
+        v = 0
+        while isLineWhiteV(img_data, v) == True:
+            v += 1 # right shift the v_cut point until whole column is white
+        img = img.crop((max(0, v - 10), 0, img.size[0], img.size[1]))
+        
         img.save(pth[:pth.rfind(".")] + "_w" + pth[pth.rfind("."):])
         
