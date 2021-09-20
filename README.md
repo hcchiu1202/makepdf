@@ -11,15 +11,16 @@ pip install Pillow fpdf2
 ```
 
 # How to use
-- For cutting + compiling:
-clone the repo\
+- For cutting + compiling:\
+clone the repo
 ```bash
 python makepdf.py
 ```
 input directory containing the images you want to compile\
-a PDF file will be generated\
+a PDF file will be generated
 
-- For standalone use of horizontal cut for long image:
+
+- For standalone use of horizontal cut for long image:\
 clone the repo
 ```bash
 python horizontalCut.py (into how many sections you want to break the image height: int, default=3)
