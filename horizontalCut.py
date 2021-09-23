@@ -105,5 +105,5 @@ if __name__ == '__main__':
         
         img.save(pth[:pth.rfind(".")] + "_w" + pth[pth.rfind("."):])
         
-    print("Finished processing horizonal cutting")
+    print("Finished processing horizontal cutting")
         

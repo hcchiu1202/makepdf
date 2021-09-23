@@ -8,10 +8,12 @@ script for compiling a batch of images to a pdf suitable for viewing on Kindle p
 """
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance
 from fpdf import FPDF
 import os
 from os.path import isfile, join
+import argparse
+
 from utils import sorted_alphanumeric, isLineWhiteV, isPicWhite
 from horizontalCut import horizontalCut
 
@@ -59,6 +61,13 @@ def addWidePage(img: Image, v_cuts:list):
         addPDFPage(cropped)
 
 ##### params #####
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-hc', '--horizontal_cuts', type=int, default=3, help="rearrange image into 1/x of original height")
+parser.add_argument('-sp', '--sharpen', action='store_true', help='sharpen the image')
+parser.add_argument('-bw', '--blackwhite', action='store_true', help='quantize image into black and white only')
+args = parser.parse_args()
+
 mypath = input('Directory which contains image files:\n')
 if mypath == '':
     mypath = os.getcwd()
@@ -80,6 +89,11 @@ for filename in filenames:
         print(filename)
         img = Image.open(join(mypath, filename))
         img = img.convert('L')
+        if args.sharpen == True:
+            enhancer = ImageEnhance.Sharpness(img)
+            img = enhancer.enhance(2.0)
+        if args.blackwhite == True:
+            img = img.point(lambda x: 0 if x < 230 else x)
         img_w, img_h = img.size
         
         if img_w > device_w and img_h > device_h:                                           # if need resize
@@ -95,7 +109,7 @@ for filename in filenames:
                         addPDFPage(img)
             else:                                                                           # resize according to width (long page)
                 try:
-                    img = horizontalCut(img)
+                    img = horizontalCut(img, args.horizontal_cuts)
                     img = img.resize((img.size[0]*device_h//img.size[1], device_h), resample=Image.LANCZOS)
                     v_cuts = verticalCut(img)
                     addWidePage(img, v_cuts)
