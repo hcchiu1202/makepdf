@@ -27,8 +27,18 @@ def getHCuts(img:Image):
         if columns_bw[w+1] - columns_bw[w] == 1:
             try:
                 h_cuts.append(w+1+2)
+                column_margin = True
             except IndexError:
                 h_cuts.append(w+1)
+                column_margin = False
+    if len(h_cuts) == 1: #if page only have one line of text
+        if column_margin == True:
+            v = h_cuts[0]-1-2
+        else:
+            v = h_cuts[0]-1
+        while isLineWhiteV(img_data, v) == False:
+            v -= 1
+        h_cuts.insert(0, v)
     h_intervals = []
     for i in range(len(h_cuts) - 1):
         h_intervals.append(h_cuts[i+1] - h_cuts[i])
