@@ -78,14 +78,14 @@ filenames = sorted_alphanumeric(
 device_w = 768
 device_h = 1024
 v_cut_threshold = 820
-long_page_ratio = 0.65 #page w/h below this is long page
+long_page_ratio = 0.6 #page w/h below this is long page
 
 ######################################
 
 pdf = FPDF()
 
 for filename in filenames:
-#    try:
+    try:
         print(filename)
         img = Image.open(join(mypath, filename))
         img = img.convert('L')
@@ -108,13 +108,13 @@ for filename in filenames:
                     except IndexError:
                         addPDFPage(img)
             else:                                                                           # resize according to width (long page)
-#                try:
+                try:
                     img = horizontalCut(img, args.horizontal_cuts)
                     img = img.resize((img.size[0]*device_h//img.size[1], device_h), resample=Image.LANCZOS)
                     v_cuts = verticalCut(img)
                     addWidePage(img, v_cuts)
-#                except IndexError:
-#                    addPDFPage(img)
+                except IndexError:
+                    addPDFPage(img)
                 
         elif img_w < device_w and img_h < device_h:                                         # small page, direct add
             addPDFPage(img)
@@ -123,9 +123,10 @@ for filename in filenames:
                 addPDFPage(img)                                                                       # do nth at the moment, think later
             elif img_h <= device_h:
                 addPDFPage(img)
+            print('strange ratio handling not implemented')
 
-#    except:
-#        print("unsupported file skipped: {}".format(filename))
+    except Exception as e:
+        print("unsupported file skipped: {} due to {}".format(filename, e))
         
 print("Finished processing")
 

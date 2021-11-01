@@ -5,6 +5,7 @@ Created on Mon Oct 19 11:59:21 2020
 @author: justwah
 """
 import numpy as np
+import math
 from PIL import Image
 import sys
 import os
@@ -42,13 +43,17 @@ def getHCuts(img:Image):
     h_intervals = []
     for i in range(len(h_cuts) - 1):
         h_intervals.append(h_cuts[i+1] - h_cuts[i])
-        h_interval_mean = int(sum(h_intervals) / (len(h_cuts) - 1))
+    if len(h_intervals) < 8:   # if text line number too little(e.g.2) and 'rubi' exist, mean becomes inaccurate
+        h_interval_mean = max(h_intervals)
+    else:
+        h_interval_mean = math.ceil(np.mean(h_intervals))
     
     h_cuts.append(img.size[0])
     h_cuts.reverse()
     if h_cuts[-1] > h_interval_mean:
         h_cuts.append(h_cuts[-1] - h_interval_mean)
-    h_cuts.append(0)
+    if h_cuts[-1] != 0:
+        h_cuts.append(0)
     return h_cuts  
 
 
@@ -58,7 +63,7 @@ def horizontalCut(img: Image, split: int = 3):
     bg_img = Image.new("L", (img_w*split, img_h//split), 255)
     bg_w_remain = bg_img.size[0]
     img_data = np.asarray(img)
-    while isLineWhiteH(img_data, y_scan, sensitivity=80) == False:
+    while isLineWhiteH(img_data, y_scan, sensitivity=80) == False and y_scan > 0:
         y_scan -= 1
     h_cuts = getHCuts(img.crop((0, y_scan, img_w, img_h)))
     for i in range(len(h_cuts) - 1):
@@ -67,7 +72,7 @@ def horizontalCut(img: Image, split: int = 3):
         for i in range(split - 1):
             h_scan = (column.size[1] // split) * (i+1)
             column_data = np.asarray(column)
-            while isLineWhiteH(column_data, h_scan) == False:
+            while isLineWhiteH(column_data, h_scan) == False and h_scan < img_h-1:
                 h_scan += 1
             if len(crop_ys) > 0 and h_scan == crop_ys[-1]:
                 continue
@@ -89,8 +94,6 @@ def horizontalCut(img: Image, split: int = 3):
         v += 1                                      # right shift the v_cut point until whole column is white
     bg_img = bg_img.crop((max(0, v - 10), 0, bg_img.size[0], bg_img.size[1]))
     return bg_img #img: rearranged image of dimension (w*2, h/2) of input image - the trimmed white area at left side
-
-
 
 
 if __name__ == '__main__':
