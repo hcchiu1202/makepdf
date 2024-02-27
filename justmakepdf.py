@@ -4,7 +4,7 @@ Created on Mon Oct 19 11:59:21 2020
 
 @author: justwah
 
-script for compiling a batch of images to a pdf suitable for viewing on Kindle paperwhite
+just make bunch of images into a pdf file
 """
 
 from PIL import Image
@@ -24,21 +24,14 @@ def addPDFPage(img: Image):
     pdf.image(img, x=0, y=0, h=img.size[1]) #unit in mm
 
 
-##### params #####
 
 mypath = input('Directory which contains image files:\n')
 if mypath == '':
     mypath = os.getcwd()
+
 filenames = sorted_alphanumeric(
     [f for f in os.listdir(mypath) if isfile(join(mypath, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))]
     )
-
-device_w = 768
-device_h = 1024
-v_cut_threshold = 820
-long_page_ratio = 0.6 #page w/h below this is long page
-
-######################################
 
 pdf = FPDF()
 
